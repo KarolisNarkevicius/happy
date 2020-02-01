@@ -7,6 +7,7 @@ namespace Happy\Console;
 use Dotenv\Dotenv;
 use Illuminate\Hashing\BcryptHasher;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -38,8 +39,11 @@ class PasswordCommand extends Command
             //todo throw exception if cant connect or update
             $conn = mysqli_connect($credentials->host, $credentials->username, $credentials->password, $credentials->database, $credentials->port);
             $conn->query('UPDATE `users` SET `password`="' . $password . '"');
-            
-            $output->writeln('Updated passwords in "' . $credentials->database . '" database, "users" table.');
+
+            $style = new OutputFormatterStyle('white', 'green', ['bold']);
+            $output->getFormatter()->setStyle('green', $style);
+
+            $output->writeln('<green>Updated passwords in "' . $credentials->database . '" database, "users" table.</green>');
         } else {
             $output->writeln($password);
         }
