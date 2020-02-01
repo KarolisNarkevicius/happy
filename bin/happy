@@ -10,4 +10,5 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
 $app = new Symfony\Component\Console\Application('DTO generator', '0.1');
 $app->add(new Happy\Console\MakeDtoCommand);
 $app->add(new Happy\Console\PasswordCommand);
+$app->add(new Happy\Console\DumpDatabaseCommand);
 $app->run();
