@@ -9,7 +9,7 @@ class {{ class_name }}
 public{{ type ? ' ' ~ type : '' }} ${{ field }};
 
     {% endfor %}
-public function __construct(array $data)
+public function __construct(array $data = [])
     {
 
         foreach ($data as $key => $value) {
