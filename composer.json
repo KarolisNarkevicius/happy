@@ -12,7 +12,9 @@
         "php": "^7.4",
         "twig/twig": "^3.0",
         "symfony/console": "^5.0",
-        "illuminate/support": "^6.13"
+        "illuminate/support": "^6.13",
+        "illuminate/hashing": "^6.13",
+        "vlucas/phpdotenv": "4.0"
     },
     "bin": [
         "bin/happy"
@@ -23,5 +25,8 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "symfony/var-dumper": "^5.0"
+    }
 }
