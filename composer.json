@@ -1,5 +1,7 @@
 {
-    "name": "karolis/dto-generator",
+    "name": "happy/happy",
+    "description": "A happy little code generator.",
+    "license": "MIT",
     "authors": [
         {
             "name": "Karolis",
@@ -7,12 +9,13 @@
         }
     ],
     "require": {
+        "php": "^7.4",
         "twig/twig": "^3.0",
         "symfony/console": "^5.0",
         "illuminate/support": "^6.13"
     },
     "bin": [
-        "bin/dto"
+        "bin/happy"
     ],
     "autoload": {
         "psr-4": {

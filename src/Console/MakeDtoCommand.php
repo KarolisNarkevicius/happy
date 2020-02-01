@@ -13,7 +13,7 @@ use Symfony\Component\Console\Question\Question;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
-class MakeCommand extends Command
+class MakeDtoCommand extends Command
 {
 
     private string $className;
@@ -22,7 +22,7 @@ class MakeCommand extends Command
 
     public function configure()
     {
-        $this->setName('make')
+        $this->setName('make:dto')
             ->setDescription('Creates a new DTO object in your App/DTO directory.')
             ->addArgument('name', InputArgument::REQUIRED, 'Name of your DTO class.')
             ->addOption('interactive', 'i', InputOption::VALUE_OPTIONAL, 'Get an interactive form for fields', false);

@@ -8,5 +8,5 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
 }
 
 $app = new Symfony\Component\Console\Application('DTO generator', '0.1');
-$app->add(new Happy\Console\MakeCommand);
+$app->add(new Happy\Console\MakeDtoCommand);
 $app->run();
