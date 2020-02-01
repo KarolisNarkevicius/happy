@@ -1,0 +1,41 @@
+<?php
+
+namespace App\DTO;
+
+class {{ class_name }}
+{
+
+    {% for field, type in fields %}
+public{{ type ? ' ' ~ type : '' }} ${{ field }};
+
+    {% endfor %}
+public function __construct(array $data)
+    {
+
+        foreach ($data as $key => $value) {
+            $method = 'set' . ucfirst($key);
+            if (method_exists($this, $method)) {
+                $this->{$method}($value);
+            } else {
+                $this->{$key} = $value;
+            }
+        }
+
+    }
+
+{% for field, type in fields %}
+    public function set{{ field|capitalize }}({{ (type ? type ~ ' ' : '') }}$value): self
+    {
+        $this->{{ field }} = $value;
+
+        return $this;
+    }
+
+    public function get{{ field|capitalize }}(){{ (type ? ':'~type : '') }}
+    {
+        return $this->{{ field }};
+    }
+
+{% endfor %}
+
+}

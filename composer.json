@@ -1,0 +1,22 @@
+{
+    "name": "karolis/dto-generator",
+    "authors": [
+        {
+            "name": "Karolis",
+            "email": "narkevicius.karolis@gmail.com"
+        }
+    ],
+    "require": {
+        "twig/twig": "^3.0",
+        "symfony/console": "^5.0",
+        "illuminate/support": "^6.13"
+    },
+    "bin": [
+        "bin/dto"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Happy\\": "src/"
+        }
+    }
+}
