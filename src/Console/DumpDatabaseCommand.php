@@ -84,7 +84,7 @@ class DumpDatabaseCommand extends Command
         }
 
         //import database to local server
-//        TODO GENERATE COMMANDS BASED ON PASSWORD EXISTANCE
+        //TODO GENERATE COMMANDS BASED ON PASSWORD EXISTENCE
         $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' -e "drop database if exists ' . $localEnvironment->get('DB_DATABASE') . '"');
         $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' -e "create database ' . $localEnvironment->get('DB_DATABASE') . '"');
         $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' ' . $localEnvironment->get('DB_DATABASE') . ' < ' . getcwd() . '/happy_dump.sql');
@@ -104,7 +104,7 @@ class DumpDatabaseCommand extends Command
             $process = Process::fromShellCommandline($command, null, $env);
         } else {
             $process = Process::fromShellCommandline(
-                "ssh forge@app.detrasolar.com 'bash -se' << \\$delimiter" . PHP_EOL
+                "ssh " . $server . " 'bash -se' << \\$delimiter" . PHP_EOL
                 . implode(PHP_EOL, $env) . PHP_EOL
                 . 'set -e' . PHP_EOL
                 . $command . PHP_EOL
