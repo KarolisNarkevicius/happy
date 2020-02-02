@@ -29,11 +29,16 @@ class DumpDatabaseCommand extends Command
 
         //generate a .happy file and ask for env vars if they are not there
         if (!file_exists(getcwd() . '/.happy')) {
-            $output->writeln('.happy file not found.');
             $output->writeln('Creating .happy file...');
-            $output->writeln('PLEASE FILL IN YOUR SERVER DETAILS IN .happy FILE');
+
             file_put_contents(getcwd() . '/.happy', join("\n", ['REMOTE_SERVER_HOST= #forge@your-server.com', 'REMOTE_PROJECT_PATH= #/home/forge/your-project']));
 
+            if (file_exists(getcwd() . '/.gitignore')) {
+                file_put_contents(getcwd() . '/.gitignore', "\n.happy", FILE_APPEND);
+                $output->writeln('Added .happy to .gitignore...');
+            }
+            $output->writeln('PLEASE FILL IN YOUR SERVER DETAILS IN .happy FILE AND RERUN THE COMMAND.');
+            
             return 0;
         }
 
@@ -95,7 +100,7 @@ class DumpDatabaseCommand extends Command
         return 0;
     }
 
-    private function executeCommand(string $server, string $command, \Closure $callback = null)
+    private function executeCommand(string $server, string $command, \Closure $callback = null): void
     {
         $delimiter = 'EOF-HAPPY';
         $env = [];
