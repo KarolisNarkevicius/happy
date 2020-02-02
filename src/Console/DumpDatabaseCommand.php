@@ -27,7 +27,7 @@ class DumpDatabaseCommand extends Command
             }
         });
 
-        //generate a .happy file and ask for env vars if they are not there
+        //generate .happy file if its not there
         if (!file_exists(getcwd() . '/.happy')) {
             $output->writeln('Creating .happy file...');
 
@@ -42,6 +42,7 @@ class DumpDatabaseCommand extends Command
             return 0;
         }
 
+        //get .happy variables
         $happyEnv = new EnvFromString(file_get_contents(getcwd() . '/.happy'));
         $remoteServerHost = $happyEnv->get('REMOTE_SERVER_HOST') ?? null;
         $remoteServerPath = $happyEnv->get('REMOTE_PROJECT_PATH') ?? null;
@@ -50,7 +51,17 @@ class DumpDatabaseCommand extends Command
             throw new \Exception('REMOTE_SERVER_HOST or REMOTE_PROJECT_PATH not set in .happy file.');
         }
 
-        //get env from remote server
+        //get local environment
+        $localEnvironment = new EnvFromString(file_get_contents(getcwd() . '/.env'));
+
+        if ($localEnvironment->get('DB_CONNECTION') !== 'mysql') {
+            throw new \Exception('DB_CONNECTION is not mysql on local machine, check your .env file.');
+        }
+        if (!$localEnvironment->get('DB_USERNAME') || !$localEnvironment->get('DB_DATABASE')) {
+            throw new \Exception('DB_USERNAME or DB_DATABASE is not set on local machine, check your .env file.');
+        }
+
+        //get .env from remote server
         /** @var EnvFromString $serverEnvironment */
         $this->executeCommand(
             $remoteServerHost,
@@ -78,16 +89,6 @@ class DumpDatabaseCommand extends Command
 
         //remove the dump from remote server
         $this->executeCommand($remoteServerHost, 'cd ' . $remoteServerPath . ' && rm -rf happy_dump.sql');
-
-        //get local environment
-        $localEnvironment = new EnvFromString(file_get_contents(getcwd() . '/.env'));
-
-        if ($localEnvironment->get('DB_CONNECTION') !== 'mysql') {
-            throw new \Exception('DB_CONNECTION is not mysql on local machine, check your .env file.');
-        }
-        if (!$localEnvironment->get('DB_USERNAME') || !$localEnvironment->get('DB_DATABASE')) {
-            throw new \Exception('DB_USERNAME or DB_DATABASE is not set on local machine, check your .env file.');
-        }
 
         //import database to local server
         $minusP = $localEnvironment->get('DB_PASSWORD') ? '-p' . $localEnvironment->get('DB_PASSWORD') : ''; //need this, cause if password is empty, terminal will ask to enter it
