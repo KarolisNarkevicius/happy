@@ -38,7 +38,7 @@ class DumpDatabaseCommand extends Command
                 $output->writeln('Added .happy to .gitignore...');
             }
             $output->writeln('PLEASE FILL IN YOUR SERVER DETAILS IN .happy FILE AND RERUN THE COMMAND.');
-            
+
             return 0;
         }
 
@@ -57,8 +57,9 @@ class DumpDatabaseCommand extends Command
             'cd ' . $remoteServerPath . ' && cat .env',
             function ($type, $output) use (&$serverEnvironment) {
                 $serverEnvironment = new EnvFromString($output);
+
                 if ($serverEnvironment->get('DB_CONNECTION') !== 'mysql') {
-                    throw new \Exception('DB_CONNECTION is not mysql on remote server, check your env file.');
+                    throw new \Exception('DB_CONNECTION is not mysql on remote server, check your .env file.');
                 }
                 if (!$serverEnvironment->get('DB_USERNAME') || !$serverEnvironment->get('DB_PASSWORD') || !$serverEnvironment->get('DB_DATABASE')) {
                     throw new \Exception('DB_USERNAME, DB_PASSWORD or DB_DATABASE is not set on remote server, check your .env file.');
@@ -82,17 +83,18 @@ class DumpDatabaseCommand extends Command
         $localEnvironment = new EnvFromString(file_get_contents(getcwd() . '/.env'));
 
         if ($localEnvironment->get('DB_CONNECTION') !== 'mysql') {
-            throw new \Exception('DB_CONNECTION is not mysql on local machine, check your env file.');
+            throw new \Exception('DB_CONNECTION is not mysql on local machine, check your .env file.');
         }
-        if (!$localEnvironment->get('DB_USERNAME') || !$localEnvironment->get('DB_PASSWORD') || !$localEnvironment->get('DB_DATABASE')) {
-            throw new \Exception('DB_USERNAME, DB_PASSWORD or DB_DATABASE is not set on local machine, check your .env file.');
+        if (!$localEnvironment->get('DB_USERNAME') || !$localEnvironment->get('DB_DATABASE')) {
+            throw new \Exception('DB_USERNAME or DB_DATABASE is not set on local machine, check your .env file.');
         }
 
         //import database to local server
-        //TODO GENERATE COMMANDS BASED ON PASSWORD EXISTENCE
-        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' -e "drop database if exists ' . $localEnvironment->get('DB_DATABASE') . '"');
-        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' -e "create database ' . $localEnvironment->get('DB_DATABASE') . '"');
-        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' ' . $localEnvironment->get('DB_DATABASE') . ' < ' . getcwd() . '/happy_dump.sql');
+        $minusP = $localEnvironment->get('DB_PASSWORD') ? '-p' . $localEnvironment->get('DB_PASSWORD') : ''; //need this, cause if password is empty, terminal will ask to enter it
+
+        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' ' . $minusP . ' -e "drop database if exists ' . $localEnvironment->get('DB_DATABASE') . '"');
+        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' ' . $minusP . ' -e "create database ' . $localEnvironment->get('DB_DATABASE') . '"');
+        $this->executeCommand('localhost', 'mysql -u' . $localEnvironment->get('DB_USERNAME') . ' ' . $minusP . ' ' . $localEnvironment->get('DB_DATABASE') . ' < ' . getcwd() . '/happy_dump.sql');
 
         //delete local dump
         $this->executeCommand('localhost', 'rm -rf ' . getcwd() . '/happy_dump.sql');
