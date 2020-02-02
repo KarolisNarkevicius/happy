@@ -123,12 +123,12 @@ class DumpDatabaseCommand extends Command
         //TODO HANDLE ERRORS ON EXECUTION
         if ($callback instanceof \Closure) {
             $process->run(function ($type, $output) use ($callback) {
-                dump($output);
+//                dump($output);
                 $callback($type, $output);
             });
         } else {
             $process->run(function ($type, $output) {
-                dump($output);
+//                dump($output);
             });
         }
     }
