@@ -4,10 +4,10 @@
 namespace Happy\Console;
 
 
-use Dotenv\Dotenv;
+use Happy\EnvFromString;
+use Happy\Theme;
 use Illuminate\Hashing\BcryptHasher;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,51 +19,50 @@ class PasswordCommand extends Command
     {
         $this->setName('db:password')
             ->setDescription('Generates a laravel password for your database.')
-            ->addArgument('password', InputArgument::OPTIONAL, 'String to generate password from.')
-            ->addOption('update-database', 'u', InputOption::VALUE_OPTIONAL, 'Replace password for all users in the database of current project.', false);
+            ->addArgument('password', InputArgument::OPTIONAL, 'String to generate password from. (defaults to "password" if not set)')
+            ->addOption('output-only', 'o', InputOption::VALUE_OPTIONAL, 'Dont update the database and just output generated password to console.', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $output = new Theme($output);
+
         $password = $input->getArgument('password') ?? 'password';
         $hasher = new BcryptHasher(['rounds' => 10]);
 
         $password = $hasher->make($password);
 
-        $update = $input->getOption('update-database') !== false ? true : false;
+        $outputOnly = $input->getOption('output-only') !== false ? true : false;
 
-        if ($update) {
-            //todo throw exception if env is not there of keys are missing
-            $credentials = $this->getCredentials();
+        if (!$outputOnly) {
+            if (!file_exists(getcwd() . '/.env')) {
+                throw new \Exception('.env file not found.');
+            }
 
-            //todo throw exception if cant connect or update
-            $conn = mysqli_connect($credentials->host, $credentials->username, $credentials->password, $credentials->database, $credentials->port);
-            $conn->query('UPDATE `users` SET `password`="' . $password . '"');
+            $env = new EnvFromString(file_get_contents(getcwd() . '/.env'));
 
-            $style = new OutputFormatterStyle('white', 'green', ['bold']);
-            $output->getFormatter()->setStyle('green', $style);
+            if ($env->get('DB_CONNECTION') !== 'mysql') {
+                throw new \Exception('DB_CONNECTION is not mysql on local machine, check your .env file.');
+            }
 
-            $output->writeln('<green>Updated passwords in "' . $credentials->database . '" database, "users" table.</green>');
+            if (!$env->get('DB_HOST') || !$env->get('DB_USERNAME') || !$env->get('DB_DATABASE')) {
+                throw new \Exception('DB_HOST, DB_USERNAME or DB_DATABASE is not set on local machine, check your .env file.');
+            }
+
+            $conn = mysqli_connect($env->get('DB_HOST'), $env->get('DB_USERNAME'), $env->get('DB_PASSWORD'), $env->get('DB_DATABASE'), $env->get('DB_PORT'));
+            if (!$conn) {
+                throw new \Exception('Couldn\'t connect to database.');
+            }
+            $updated = $conn->query('UPDATE `users` SET `password`="' . $password . '"');
+            if (!$updated) {
+                throw new \Exception($conn->error);
+            }
+
+            $output->writeln('Updated passwords in "' . $env->get('DB_DATABASE') . '" database, "users" table.');
         } else {
             $output->writeln($password);
         }
 
         return 0;
-    }
-
-    private function getCredentials(): object
-    {
-        //load .env file from current (project) directory
-        $dotenv = Dotenv::createMutable(getcwd());
-        $dotenv->load();
-
-        return (object)[
-            'connection' => getenv('DB_CONNECTION'),
-            'host'       => getenv('DB_HOST'),
-            'port'       => getenv('DB_PORT'),
-            'database'   => getenv('DB_DATABASE'),
-            'username'   => getenv('DB_USERNAME'),
-            'password'   => getenv('DB_PASSWORD'),
-        ];
     }
 }

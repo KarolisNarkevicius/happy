@@ -3,6 +3,7 @@
 namespace Happy\Console;
 
 
+use Happy\Theme;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -30,6 +31,7 @@ class MakeDtoCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $output = new Theme($output);
 
         $name = $input->getArgument('name');
         $interactive = $input->getOption('interactive') !== false ? true : false;
@@ -42,7 +44,7 @@ class MakeDtoCommand extends Command
             $run = true;
             while ($run) {
                 $question = new Question('Enter field name: ');
-                $field = $this->getHelper('question')->ask($input, $output, $question);
+                $field = $this->getHelper('question')->ask($input, $output->output, $question);
 
                 if (!$field) {
                     $run = false;
